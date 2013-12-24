@@ -26,11 +26,11 @@
     {:transforms
       {:add-bookmark [{msg/topic [:bookmarks]
                        (msg/param :url) {}
-                       (msg/param :tag) {}}]}}
-    :user
-    {:transforms
-     {:set-user [{msg/topic [:user]
-                   (msg/param :value) {}}]}}}])
+                       (msg/param :tag) {}}]}
+     :user
+     {:transforms
+      {:set-user [{msg/topic [:user]
+                   (msg/param :value) {}}]}}}}])
 
 
 (def bookmark-app

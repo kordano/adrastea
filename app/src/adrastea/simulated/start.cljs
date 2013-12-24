@@ -4,7 +4,8 @@
             [adrastea.rendering :as rendering]
             [goog.Uri]
             [io.pedestal.app.protocols :as p]
-            [demeter.simulated.services :as services]
+            [adrastea.simulated.services :as services]
+            ;; tools to work.
             [io.pedestal.app-tools.tooling :as tooling]))
 
 (defn param [name]

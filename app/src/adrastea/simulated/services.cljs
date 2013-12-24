@@ -3,8 +3,6 @@
             [io.pedestal.app.messages :as msg]
             [io.pedestal.app.util.platform :as platform]))
 
-;; Implement services to simulate talking to back-end services
-
 (set! clojure.core/*print-fn* (fn [& s] (.log js/console (apply str s))))
 
 

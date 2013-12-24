@@ -3,8 +3,8 @@
             [adrastea.start :as start]
             [adrastea.rendering :as rendering]
             [goog.Uri]
-            ;; This needs to be included somewhere in order for the
-            ;; tools to work.
+            [io.pedestal.app.protocols :as p]
+            [demeter.simulated.services :as services]
             [io.pedestal.app-tools.tooling :as tooling]))
 
 (defn param [name]
@@ -12,11 +12,7 @@
     (.getParameterValue uri name)))
 
 (defn ^:export main []
-  ;; Create an application which uses the data renderer. The :data-ui
-  ;; aspect is configured to run this main function. See
-  ;;
-  ;; config/config.edn
-  ;;
-  (start/create-app (if (= "auto" (param "renderer"))
-                      d/data-renderer-config
-                      (rendering/render-config))))
+  (let [app (start/create-app d/data-renderer-config)
+        services (services/->MockServices (:app app))]
+    (p/start services)
+    app))

@@ -13,7 +13,7 @@
         render-fn (push-render/renderer "content" render-config render/log-fn)
         app-model (render/consume-app-model app render-fn)]
     (app/begin app)
-    (p/put-message (:input app) {msg/type :set-user msg/topic [:user] "konny"})
+    (p/put-message (:input app) {msg/type :set-user msg/topic [:user] :value "konny"})
     {:app app :app-model app-model}))
 
 (defn ^:export main []

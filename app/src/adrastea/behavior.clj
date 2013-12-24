@@ -1,76 +1,46 @@
 (ns ^:shared adrastea.behavior
     (:require [clojure.string :as string]
-              [io.pedestal.app.messages :as msg]))
-;; While creating new behavior, write tests to confirm that it is
-;; correct. For examples of various kinds of tests, see
-;; test/adrastea/behavior-test.clj.
+              [io.pedestal.app.messages :as msg]
+              [io.pedestal.app.util.platform :as platform]
+              [io.pedestal.app :as app]))
 
-(defn set-value-transform [old-value message]
+
+(set! clojure.core/*print-fn* (fn [& s] (.log js/console (apply str s))))
+
+
+(defn bookmark-transform [old-value {tag :tag url :url}]
+  (let [new-entry {:url url :tag tag :time (platform/date) :uuid (UUID. url)}]
+    (if (nil? old-value)
+       new-entry
+      (if (vector? old-value)
+        (conj old-value new-entry)
+        (vector old-value new-entry)))))
+
+
+(defn set-value-transform [_ message]
   (:value message))
 
-(def example-app
-  ;; There are currently 2 versions (formats) for dataflow
-  ;; description: the original version (version 1) and the current
-  ;; version (version 2). If the version is not specified, the
-  ;; description will be assumed to be version 1 and an attempt
-  ;; will be made to convert it to version 2.
+
+(defn init-main [_]
+  [{:bookmarks
+    {:transforms
+      {:add-bookmark [{msg/topic [:bookmarks]
+                       (msg/param :url) {}
+                       (msg/param :tag) {}}]}}
+    :user
+    {:transforms
+     {:set-user [{msg/topic [:user]
+                   (msg/param :value) {}}]}}}])
+
+
+(def bookmark-app
   {:version 2
-   :transform [[:set-value [:greeting] set-value-transform]]})
-
-;; Once this behavior works, run the Data UI and record
-;; rendering data which can be used while working on a custom
-;; renderer. Rendering involves making a template:
-;;
-;; app/templates/adrastea.html
-;;
-;; slicing the template into pieces you can use:
-;;
-;; app/src/adrastea/html_templates.cljs
-;;
-;; and then writing the rendering code:
-;;
-;; app/src/adrastea/rendering.cljs
-
-(comment
-  ;; The examples below show the signature of each type of function
-  ;; that is used to build a behavior dataflow.
-
-  ;; transform
-
-  (defn example-transform [old-state message]
-    ;; returns new state
-    )
-
-  ;; derive
-
-  (defn example-derive [old-state inputs]
-    ;; returns new state
-    )
-
-  ;; emit
-
-  (defn example-emit [inputs]
-    ;; returns rendering deltas
-    )
-
-  ;; effect
-
-  (defn example-effect [inputs]
-    ;; returns a vector of messages which effect the outside world
-    )
-
-  ;; continue
-
-  (defn example-continue [inputs]
-    ;; returns a vector of messages which will be processed as part of
-    ;; the same dataflow transaction
-    )
-
-  ;; dataflow description reference
-
-  {:transform [[:op [:path] example-transform]]
-   :derive    #{[#{[:in]} [:path] example-derive]}
-   :effect    #{[#{[:in]} example-effect]}
-   :continue  #{[#{[:in]} example-continue]}
-   :emit      [[#{[:in]} example-emit]]}
-  )
+   :debug true
+   :transform [[:add-bookmark [:bookmarks] bookmark-transform]
+               [:set-user [:user] set-value-transform]
+               [:swap [:**] set-value-transform]]
+   :emit [{:init init-main}
+          [#{[:bookmarks]
+             [:user]
+             [:import :*]}
+           (app/default-emitter [])]]})

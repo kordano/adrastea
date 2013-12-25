@@ -11,14 +11,14 @@
 (defn bookmark-transform [old-value {tag :tag url :url}]
   (let [new-entry {:url url :tag tag :time (platform/date) :uuid (UUID. url) :user nil}]
     (if (nil? old-value)
-       new-entry
-      (if (vector? old-value)
-        (conj old-value new-entry)
-        (vector old-value new-entry)))))
+      [new-entry]
+      (conj old-value new-entry))))
 
 
 (defn apply-bookmark-user [old-value new-value]
-  (let [bookmarks (old-value [:bookmarks])]))
+  (if (nil? old-value)
+    nil
+    (assoc-in old-value [(dec (count old-value)) :user] (new-value [:user])))) ;TODO better extracting of last element
 
 (defn set-value-transform [_ message]
   (:value message))
@@ -42,7 +42,7 @@
    :transform [[:add-bookmark [:bookmarks] bookmark-transform]
                [:set-user [:user] set-value-transform]
                [:swap [:**] set-value-transform]]
-   ;;:derive #{[#{[:user] [:bookmarks]} [:bookmarks] apply-bookmark-user :map]}
+   :derive #{[#{[:user] [:bookmarks]} [:bookmarks] apply-bookmark-user :map]}
    :emit [{:init init-main}
           [#{[:bookmarks]
              [:user]

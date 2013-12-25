@@ -9,13 +9,16 @@
 
 
 (defn bookmark-transform [old-value {tag :tag url :url}]
-  (let [new-entry {:url url :tag tag :time (platform/date) :uuid (UUID. url)}]
+  (let [new-entry {:url url :tag tag :time (platform/date) :uuid (UUID. url) :user nil}]
     (if (nil? old-value)
        new-entry
       (if (vector? old-value)
         (conj old-value new-entry)
         (vector old-value new-entry)))))
 
+
+(defn apply-bookmark-user [old-value new-value]
+  (let [bookmarks (old-value [:bookmarks])]))
 
 (defn set-value-transform [_ message]
   (:value message))
@@ -26,11 +29,11 @@
     {:transforms
       {:add-bookmark [{msg/topic [:bookmarks]
                        (msg/param :url) {}
-                       (msg/param :tag) {}}]}
-     :user
-     {:transforms
-      {:set-user [{msg/topic [:user]
-                   (msg/param :value) {}}]}}}}])
+                       (msg/param :tag) {}}]}}
+    :user
+    {:transforms
+     {:set-user [{msg/topic [:user]
+                  (msg/param :value) {}}]}}}])
 
 
 (def bookmark-app
@@ -39,6 +42,7 @@
    :transform [[:add-bookmark [:bookmarks] bookmark-transform]
                [:set-user [:user] set-value-transform]
                [:swap [:**] set-value-transform]]
+   ;;:derive #{[#{[:user] [:bookmarks]} [:bookmarks] apply-bookmark-user :map]}
    :emit [{:init init-main}
           [#{[:bookmarks]
              [:user]

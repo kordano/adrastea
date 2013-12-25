@@ -16,9 +16,12 @@
 
 
 (defn apply-bookmark-user [old-value new-value]
+  ;TODO: better bookmark-user handling
   (if (nil? old-value)
     nil
-    (assoc-in old-value [(dec (count old-value)) :user] (new-value [:user])))) ;TODO better extracting of last element
+    (if (nil? (get-in old-value [(dec (count old-value)) :user]))
+      (assoc-in old-value [(dec (count old-value)) :user] (new-value [:user]))
+      old-value)))
 
 (defn set-value-transform [_ message]
   (:value message))

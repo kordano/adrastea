@@ -25,7 +25,8 @@
                                                #(conj % {:url new-url
                                                          :tag new-tag
                                                          :time (platform/date)
-                                                         :uuid (UUID. new-url)}))
+                                                         :uuid (UUID. new-url)
+                                                         :user key}))
                                         key)})
     (platform/create-timeout t #(append-bookmark key t input-queue))))
 

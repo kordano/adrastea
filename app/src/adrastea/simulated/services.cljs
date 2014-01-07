@@ -15,14 +15,16 @@
 
 
 (defn append-bookmark [key t input-queue]
-  (let [new-url (random-string 10)
+  (let [new-url (random-string 30)
+        new-title (random-string 10)
         new-tag (random-string 3)]
     (p/put-message input-queue {msg/type :swap
                                 msg/topic [:import key]
                                 :value (get
                                         (swap! bookmarks
                                                update-in [key]
-                                               #(conj % {:url new-url
+                                               #(conj % {:title new-title
+                                                         :url new-url
                                                          :tag new-tag
                                                          :time (platform/date)
                                                          :uuid (UUID. new-url)
